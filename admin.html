@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="bn" class="h-full bg-slate-50">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>শিক্ষক ও মূল্যায়ন ড্যাশবোর্ড | Teacher Dashboard - Online Exam Portal</title>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="min-h-full flex flex-col text-slate-800 bg-slate-100">
+
+  <!-- ================= AUTH GATE MODAL ================= -->
+  <div id="auth-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 text-center">
+      <div class="w-14 h-14 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center mx-auto mb-4">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+      </div>
+      <h2 class="text-xl font-bold text-slate-900 mb-1">শিক্ষক / অ্যাডমিন পোর্টাল</h2>
+      <p class="text-xs text-slate-500 mb-4">ফলাফল ও অ্যান্টি-চিট লগ দেখতে পাসকোড লিখুন</p>
+      
+      <div class="mb-4">
+        <input type="password" id="admin-pin" placeholder="পাসকোড লিখুন (ডিফল্ট: teacher2024)" class="w-full text-center px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-slate-900 text-sm">
+        <p id="pin-error" class="hidden text-xs text-red-500 mt-1.5 font-medium">ভুল পাসকোড! পুনরায় চেষ্টা করুন।</p>
+      </div>
+
+      <button type="button" id="btn-login-admin" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition text-sm shadow">
+        প্রবেশ করুন (Access Dashboard)
+      </button>
+      <div class="mt-3 text-xs text-slate-400">ডিফল্ট পাসকোড: <code class="text-slate-600">teacher2024</code></div>
+    </div>
+  </div>
+
+  <!-- ================= MAIN DASHBOARD ================= -->
+  <div id="dashboard-content" class="hidden flex-grow flex flex-col">
+    <!-- Top Header -->
+    <header class="bg-slate-900 text-white shadow-md">
+      <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="bg-blue-600 text-white text-[11px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">Teacher Panel</span>
+            <span class="text-xs text-slate-400">Class 8 Math - Chapter 10.3</span>
+          </div>
+          <h1 class="text-xl md:text-2xl font-extrabold mt-1">বৃত্ত ও সিলিন্ডার: পরীক্ষা মূল্যায়ন ও নিরাপত্তা ড্যাশবোর্ড</h1>
+        </div>
+        <div class="flex items-center space-x-2">
+          <button type="button" id="btn-open-create-exam" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold transition flex items-center space-x-1.5 shadow">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            <span>নতুন পরীক্ষা যুক্ত করুন (Add Exam)</span>
+          </button>
+          <a href="index.html" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold transition flex items-center space-x-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            <span>পরীক্ষা পোর্টালে যান</span>
+          </a>
+          <button type="button" id="btn-export-csv" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold transition flex items-center space-x-1 shadow">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+            <span>CSV এক্সপোর্ট (Excel)</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto w-full px-4 py-6 flex-grow space-y-6">
+      <!-- Overview KPI Cards -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+          <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">মোট পরীক্ষার্থী</span>
+          <div id="stat-total-students" class="text-3xl font-extrabold text-slate-900 my-1">0</div>
+          <span class="text-xs text-slate-400">নিবন্ধিত রোল</span>
+        </div>
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+          <span class="text-xs font-bold text-emerald-600 uppercase tracking-wider block">স্বাভাবিক সমাপ্তি</span>
+          <div id="stat-normal-submit" class="text-3xl font-extrabold text-emerald-600 my-1">0</div>
+          <span class="text-xs text-emerald-700">নিয়ম মেনে জমা</span>
+        </div>
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+          <span class="text-xs font-bold text-red-600 uppercase tracking-wider block">অটো-সাবমিট (উদ্বেগজনক)</span>
+          <div id="stat-violations" class="text-3xl font-extrabold text-red-600 my-1">0</div>
+          <span class="text-xs text-red-700">ট্যাব সুইচ / ব্যাক / নকলের চেষ্টা</span>
+        </div>
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+          <span class="text-xs font-bold text-blue-600 uppercase tracking-wider block">গড় নম্বর ও পাস হার</span>
+          <div id="stat-avg-score" class="text-3xl font-extrabold text-blue-600 my-1">0%</div>
+          <span id="stat-pass-rate" class="text-xs text-blue-700">পাস হার: 0%</span>
+        </div>
+      </div>
+
+      <!-- Exams Management Accordion / Card -->
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-4 bg-slate-50/80 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <div>
+            <h3 class="font-bold text-slate-900 text-sm md:text-base flex items-center space-x-2">
+              <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+              <span>পোর্টালে সক্রিয় পরীক্ষার তালিকা (Exams Catalog)</span>
+            </h3>
+            <p class="text-xs text-slate-500">শিক্ষার্থীদের জন্য কোন পরীক্ষাগুলো দৃশ্যমান ও সক্রিয় তা এখান থেকে পরিচালনা করুন।</p>
+          </div>
+          <button type="button" id="btn-quick-add-exam" class="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-lg text-xs font-semibold transition border border-indigo-200">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            <span>+ নতুন কুইজ / পরীক্ষা যোগ করুন</span>
+          </button>
+        </div>
+        <div id="exams-summary-list" class="p-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+      <!-- Filter & Search Toolbar -->
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        <div class="flex items-center space-x-2 flex-grow max-w-md">
+          <div class="relative w-full">
+            <svg class="w-4 h-4 text-slate-400 absolute left-3 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            <input type="text" id="filter-search" placeholder="নাম বা রোল নম্বর দিয়ে খুঁজুন..." class="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800">
+          </div>
+        </div>
+        <div class="flex items-center space-x-2">
+          <select id="filter-status" class="px-3 py-2 border border-slate-200 rounded-lg text-xs md:text-sm text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="ALL">সকল রেকর্ড (All Attempts)</option>
+            <option value="NORMAL">শুধুমাত্র স্বাভাবিক জমা (Normal)</option>
+            <option value="VIOLATION">শুধুমাত্র নিয়ম লঙ্ঘন (Violations)</option>
+            <option value="PASSED">উত্তীর্ণ শিক্ষার্থী (Passed)</option>
+            <option value="FAILED">অনুত্তীর্ণ শিক্ষার্থী (Failed)</option>
+          </select>
+          <button type="button" id="btn-refresh" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition" title="রিফ্রেশ করুন">
+            🔄 রিফ্রেশ
+          </button>
+        </div>
+      </div>
+
+      <!-- Students Attempts Table -->
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs md:text-sm">
+            <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold uppercase tracking-wider text-[11px]">
+              <tr>
+                <th class="py-3 px-4">শিক্ষার্থী নম্বর</th>
+                <th class="py-3 px-4">শিক্ষার্থীর নাম</th>
+                <th class="py-3 px-4">প্রাপ্ত নম্বর</th>
+                <th class="py-3 px-4">শতাংশ (%)</th>
+                <th class="py-3 px-4">জমার স্থিতি ও লঙ্ঘন কারণ</th>
+                <th class="py-3 px-4">সময়কাল</th>
+                <th class="py-3 px-4">তারিখ ও সময়</th>
+                <th class="py-3 px-4 text-center">অ্যাকশন</th>
+              </tr>
+            </thead>
+            <tbody id="attempts-table-body" class="divide-y divide-slate-100">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+        <div id="empty-state" class="hidden p-8 text-center text-slate-500 text-sm">
+          কোনো পরীক্ষার রেকর্ড পাওয়া যায়নি।
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ================= STUDENT ANSWER SHEET MODAL ================= -->
+  <div id="details-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
+    <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 my-8">
+      <div class="flex items-center justify-between pb-4 border-b border-slate-200">
+        <div>
+          <h3 id="modal-student-title" class="text-lg font-bold text-slate-900">শিক্ষার্থীর খাতা বিবরণী</h3>
+          <p id="modal-student-subtitle" class="text-xs text-slate-500">রোল: -- | স্কোর: --</p>
+        </div>
+        <button type="button" id="btn-close-modal" class="text-slate-400 hover:text-slate-600 text-xl font-bold p-1">
+          &times;
+        </button>
+      </div>
+
+      <div id="modal-sheet-content" class="py-4 space-y-3 max-h-[60vh] overflow-y-auto">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <div class="pt-4 border-t border-slate-200 flex justify-end">
+        <button type="button" onclick="document.getElementById('details-modal').classList.add('hidden')" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-semibold">
+          বন্ধ করুন
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= CREATE / ADD EXAM MODAL ================= -->
+  <div id="create-exam-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 overflow-y-auto">
+    <div class="bg-white rounded-2xl max-w-3xl w-full p-6 shadow-2xl border border-slate-200 my-6 flex flex-col max-h-[92vh]">
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between pb-4 border-b border-slate-200 flex-shrink-0">
+        <div>
+          <h3 class="text-lg font-bold text-slate-900 flex items-center space-x-2">
+            <span class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center text-sm font-bold">📝</span>
+            <span>নতুন পরীক্ষা ও কুইজ তৈরি করুন (Create New Exam / Quiz)</span>
+          </h3>
+          <p class="text-xs text-slate-500 mt-0.5">পরীক্ষার তথ্য ও বহুনির্বাচনী প্রশ্ন যোগ করুন। সংরক্ষণ করলে শিক্ষার্থীরা সরাসরি পোর্টালে এই পরীক্ষা দিতে পারবে।</p>
+        </div>
+        <button type="button" id="btn-close-create-modal" class="text-slate-400 hover:text-slate-600 text-2xl font-bold p-1">
+          &times;
+        </button>
+      </div>
+
+      <!-- Modal Body (Scrollable) -->
+      <div class="py-4 space-y-6 overflow-y-auto flex-grow pr-1">
+        <!-- 1. Exam Metadata Form -->
+        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+          <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">১. পরীক্ষার সাধারণ তথ্য (Exam Details)</h4>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">পরীক্ষার নাম (Exam Title) *</label>
+              <input type="text" id="new-exam-title" placeholder="উদা: সাধারণ বিজ্ঞান: অধ্যায় ১ - প্রাণিজগতের শ্রেণিবিন্যাস" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">পরীক্ষা কোড / ইউনিক আইডি *</label>
+              <input type="text" id="new-exam-code" placeholder="উদা: sci-8-01" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">বিষয় (Subject)</label>
+              <input type="text" id="new-exam-subject" placeholder="উদা: বিজ্ঞান" value="সাধারণ বিজ্ঞান" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">শ্রেণি (Class)</label>
+              <input type="text" id="new-exam-class" placeholder="উদা: অষ্টম শ্রেণি" value="অষ্টম শ্রেণি (Class 8)" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">সময় (মিনিট) *</label>
+              <input type="number" id="new-exam-duration" placeholder="২০" value="20" min="5" max="180" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">পাস নম্বর *</label>
+              <input type="number" id="new-exam-passmarks" placeholder="৮" value="8" min="1" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div class="md:col-span-2">
+              <label class="block text-xs font-semibold text-slate-700 mb-1">সংক্ষিপ্ত বিবরণ (Description)</label>
+              <input type="text" id="new-exam-desc" placeholder="উদা: প্রথম অধ্যায়ের গুরুত্বপূর্ণ বহুনির্বাচনী মূল্যায়ন পরীক্ষা।" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">স্ট্যাটাস (Status)</label>
+              <select id="new-exam-status" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white">
+                <option value="active">সক্রিয় (Active - শিক্ষার্থীরা পরীক্ষা দিতে পারবে)</option>
+                <option value="upcoming">আসন্ন (Upcoming - শুধু তালিকাভুক্ত থাকবে)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Questions Builder Container -->
+        <div class="space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">২. বহুনির্বাচনী প্রশ্ন তালিকা (MCQ Questions)</h4>
+              <p class="text-[11px] text-slate-500">প্রশ্ন লিখুন, ৪টি অপশন দিন এবং সঠিক উত্তরের পাশের রেডিও বাটনে টিক দিন।</p>
+            </div>
+            <span id="badge-question-count" class="px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-bold border border-indigo-200">
+              ০টি প্রশ্ন
+            </span>
+          </div>
+
+          <div id="builder-questions-list" class="space-y-4">
+            <!-- Questions rendered here -->
+          </div>
+
+          <button type="button" id="btn-add-question-row" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-indigo-700 font-bold rounded-xl text-xs transition border-2 border-dashed border-indigo-200 flex items-center justify-center space-x-1.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            <span>+ আরও একটি প্রশ্ন যোগ করুন (Add Question)</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="pt-4 border-t border-slate-200 flex-shrink-0 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <button type="button" id="btn-copy-exam-code" class="w-full sm:w-auto px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition flex items-center justify-center space-x-1.5 border border-slate-300" title="js/exams.js ফাইলে পেস্ট করার জন্য কোড কপি করুন">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+          <span>কোড হিসেবে কপি করুন (Copy Code for git)</span>
+        </button>
+
+        <div class="flex items-center space-x-2 w-full sm:w-auto justify-end">
+          <button type="button" onclick="document.getElementById('create-exam-modal').classList.add('hidden')" class="px-4 py-2 border border-slate-300 hover:bg-slate-100 text-slate-700 rounded-lg text-xs font-semibold">
+            বাতিল
+          </button>
+          <button type="button" id="btn-save-new-exam" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition shadow flex items-center space-x-1.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            <span>পোর্টালে সংরক্ষণ ও সক্রিয় করুন (Save & Publish)</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/students.js"></script>
+  <script src="js/questions.js"></script>
+  <script src="js/exams.js"></script>
+
+  <!-- Modular Exams (Organized by: Subject > Chapter > Quiz) -->
+  <script src="exams/math/chapter_10.3/quiz_1.js"></script>
+  <script src="exams/math/chapter_11/quiz_1.js"></script>
+  <script src="exams/science/chapter_07/quiz_1.js"></script>
+
+  <script src="js/storage.js"></script>
+  <script>
+    const ADMIN_PASSCODE = "teacher2024";
+
+    // Auth gate check
+    document.getElementById('btn-login-admin').addEventListener('click', () => {
+      const pin = document.getElementById('admin-pin').value.trim();
+      if (pin === ADMIN_PASSCODE) {
+        document.getElementById('auth-modal').classList.add('hidden');
+        document.getElementById('dashboard-content').classList.remove('hidden');
+        loadDashboardData();
+      } else {
+        document.getElementById('pin-error').classList.remove('hidden');
+      }
+    });
+
+    document.getElementById('admin-pin').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        document.getElementById('btn-login-admin').click();
+      }
+    });
+
+    let cachedAttempts = [];
+
+    function loadDashboardData() {
+      const raw = ExamStorage.getAllLocalAttempts();
+      const registered = window.StudentAuth ? StudentAuth.getAllStudents() : [];
+
+      // Combine registered list with attempts
+      cachedAttempts = registered.map(st => {
+        const attempt = raw[st.number] || raw[st.roll];
+        if (attempt) {
+          return {
+            ...attempt,
+            name: attempt.name || st.name,
+            number: st.number,
+            roll: st.number,
+            pass: st.pass,
+            hasAttempted: true
+          };
+        } else {
+          return {
+            name: st.name,
+            number: st.number,
+            roll: st.number,
+            pass: st.pass,
+            hasAttempted: false,
+            score: 0,
+            percentage: 0,
+            violationReason: null,
+            timeTakenSeconds: 0,
+            submittedAt: null
+          };
+        }
+      });
+
+      // Also include any non-registered attempts if stored
+      Object.keys(raw).forEach(r => {
+        if (!registered.find(s => s.number === r || s.roll === r)) {
+          cachedAttempts.push({
+            ...raw[r],
+            number: r,
+            hasAttempted: true,
+            pass: '---'
+          });
+        }
+      });
+
+      renderTable(cachedAttempts);
+      updateKPIs(cachedAttempts);
+    }
+
+    function updateKPIs(students) {
+      const total = students.length;
+      let attempted = 0;
+      let normal = 0;
+      let violations = 0;
+      let totalScore = 0;
+      let passedCount = 0;
+
+      students.forEach(a => {
+        if (a.hasAttempted) {
+          attempted++;
+          if (a.isNormalSubmit || a.violationReason === 'Submitted Normally') {
+            normal++;
+          } else {
+            violations++;
+          }
+          const s = a.score || 0;
+          totalScore += s;
+          if (s >= 8) passedCount++;
+        }
+      });
+
+      const avg = attempted > 0 ? ((totalScore / (attempted * 20)) * 100).toFixed(1) : 0;
+      const passRate = attempted > 0 ? Math.round((passedCount / attempted) * 100) : 0;
+
+      document.getElementById('stat-total-students').textContent = total;
+      document.getElementById('stat-normal-submit').textContent = normal;
+      document.getElementById('stat-violations').textContent = violations;
+      document.getElementById('stat-avg-score').textContent = `${avg}%`;
+      document.getElementById('stat-pass-rate').textContent = `অংশগ্রহণ: ${attempted}/${total} • পাস: ${passRate}%`;
+    }
+
+    function renderTable(students) {
+      const tbody = document.getElementById('attempts-table-body');
+      const empty = document.getElementById('empty-state');
+      tbody.innerHTML = '';
+
+      if (students.length === 0) {
+        empty.classList.remove('hidden');
+        return;
+      }
+      empty.classList.add('hidden');
+
+      students.forEach(a => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50 transition';
+
+        let badge = '';
+        let actionButtons = '';
+
+        if (!a.hasAttempted) {
+          badge = `<span class="bg-amber-100 text-amber-900 text-[11px] font-bold px-2 py-0.5 rounded-full inline-block">⏳ পরীক্ষা বাকি (Pending)</span>`;
+          actionButtons = `<span class="text-xs text-slate-400">পরীক্ষা দেয়নি</span>`;
+        } else {
+          const isNormal = a.isNormalSubmit || a.violationReason === 'Submitted Normally';
+          badge = isNormal 
+            ? `<span class="bg-emerald-100 text-emerald-800 text-[11px] font-bold px-2 py-0.5 rounded-full inline-block">✓ স্বাভাবিক জমা (Normal)</span>`
+            : `<span class="bg-red-100 text-red-800 text-[11px] font-bold px-2 py-0.5 rounded-full inline-block">⚠️ অটো-সাবমিট: ${a.violationReason || 'লঙ্ঘন'}</span>`;
+
+          actionButtons = `
+            <button type="button" class="btn-view-sheet px-2.5 py-1 bg-blue-50 text-blue-700 hover:bg-blue-100 font-semibold rounded text-xs transition" data-roll="${a.roll}">
+              খাতা দেখুন
+            </button>
+            <button type="button" class="btn-delete-attempt px-2 py-1 bg-red-50 text-red-700 hover:bg-red-100 font-semibold rounded text-xs transition" data-roll="${a.roll}" title="রোল আনলক ও রেকর্ড মুছে ফেলুন">
+              মুছুন / রিসেট
+            </button>
+          `;
+        }
+
+        const m = Math.floor((a.timeTakenSeconds || 0) / 60);
+        const s = (a.timeTakenSeconds || 0) % 60;
+        const timeStr = a.hasAttempted ? `${m}মি. ${s}সে.` : '--';
+
+        const dateStr = a.submittedAt ? new Date(a.submittedAt).toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit' }) : '--';
+
+        tr.innerHTML = `
+          <td class="py-3 px-4 font-bold text-slate-900 font-mono">
+            ${a.number || a.roll || '---'}
+            <span class="block text-[10px] text-slate-400 font-normal">পাস: ${a.pass || '---'}</span>
+          </td>
+          <td class="py-3 px-4 font-medium text-slate-800">${a.name || '---'}</td>
+          <td class="py-3 px-4 font-bold ${a.hasAttempted ? (a.score >= 8 ? 'text-emerald-600' : 'text-red-600') : 'text-slate-400'}">
+            ${a.hasAttempted ? `${a.score} / 20` : '--'}
+          </td>
+          <td class="py-3 px-4 font-semibold text-slate-700">${a.hasAttempted ? `${a.percentage}%` : '--'}</td>
+          <td class="py-3 px-4">${badge}</td>
+          <td class="py-3 px-4 text-slate-500">${timeStr}</td>
+          <td class="py-3 px-4 text-slate-500 text-xs">${dateStr}</td>
+          <td class="py-3 px-4 text-center space-x-1">${actionButtons}</td>
+        `;
+
+        tbody.appendChild(tr);
+      });
+
+      // Bind action buttons
+      tbody.querySelectorAll('.btn-view-sheet').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const roll = btn.getAttribute('data-roll');
+          const item = cachedAttempts.find(x => String(x.roll) === String(roll));
+          if (item) openStudentSheet(item);
+        });
+      });
+
+      tbody.querySelectorAll('.btn-delete-attempt').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const roll = btn.getAttribute('data-roll');
+          if (confirm(`রোল ${roll}-এর পরীক্ষার রেকর্ড মুছে ফেলতে চান? এতে শিক্ষার্থী পুনরায় পরীক্ষা দিতে পারবে।`)) {
+            const raw = ExamStorage.getAllLocalAttempts();
+            delete raw[roll];
+            ExamStorage.saveAllLocalAttempts(raw);
+            loadDashboardData();
+          }
+        });
+      });
+    }
+
+    function openStudentSheet(student) {
+      document.getElementById('modal-student-title').textContent = `${student.name} (রোল: ${student.roll})`;
+      document.getElementById('modal-student-subtitle').textContent = `প্রাপ্ত নম্বর: ${student.score}/20 (${student.percentage}%) | স্ট্যাটাস: ${student.violationReason || 'Submitted Normally'}`;
+
+      const content = document.getElementById('modal-sheet-content');
+      content.innerHTML = '';
+
+      const banglaLabels = ['ক', 'খ', 'গ', 'ঘ'];
+      const answers = student.answers || {};
+
+      EXAM_QUESTIONS.forEach((q, idx) => {
+        const studentAns = answers[q.id];
+        const isCorrect = studentAns === q.correctIndex;
+        const isSkipped = studentAns === undefined;
+
+        const row = document.createElement('div');
+        row.className = `p-3 rounded-lg border text-xs ${isCorrect ? 'bg-green-50/50 border-green-200' : isSkipped ? 'bg-slate-50 border-slate-200' : 'bg-red-50/50 border-red-200'}`;
+
+        let statusBadge = isCorrect 
+          ? `<span class="text-green-700 font-bold">✓ সঠিক (+১)</span>` 
+          : isSkipped 
+          ? `<span class="text-slate-500 font-semibold">বাদ দেওয়া হয়েছে (০)</span>` 
+          : `<span class="text-red-700 font-bold">✗ ভুল (০)</span>`;
+
+        row.innerHTML = `
+          <div class="flex items-center justify-between font-semibold mb-1">
+            <span>প্রশ্ন ${idx + 1}: ${q.question}</span>
+            <span>${statusBadge}</span>
+          </div>
+          <div class="text-slate-600 mt-1">
+            <span>প্রদত্ত উত্তর: <strong>${studentAns !== undefined ? `${banglaLabels[studentAns]} (${q.options[studentAns]})` : 'উত্তর নেই'}</strong></span>
+            <span class="mx-2">•</span>
+            <span class="text-emerald-700 font-bold">সঠিক উত্তর: ${banglaLabels[q.correctIndex]} (${q.options[q.correctIndex]})</span>
+          </div>
+        `;
+        content.appendChild(row);
+      });
+
+      document.getElementById('details-modal').classList.remove('hidden');
+    }
+
+    document.getElementById('btn-close-modal').addEventListener('click', () => {
+      document.getElementById('details-modal').classList.add('hidden');
+    });
+
+    // Search and filter
+    function applyFilters() {
+      const search = document.getElementById('filter-search').value.toLowerCase().trim();
+      const status = document.getElementById('filter-status').value;
+
+      const filtered = cachedAttempts.filter(a => {
+        const matchSearch = (!search) || 
+          String(a.roll).toLowerCase().includes(search) || 
+          String(a.name).toLowerCase().includes(search);
+
+        if (!matchSearch) return false;
+
+        if (status === 'ALL') return true;
+        const isNormal = a.isNormalSubmit || a.violationReason === 'Submitted Normally';
+        if (status === 'NORMAL') return isNormal;
+        if (status === 'VIOLATION') return !isNormal;
+        if (status === 'PASSED') return (a.score || 0) >= 8;
+        if (status === 'FAILED') return (a.score || 0) < 8;
+        return true;
+      });
+
+      renderTable(filtered);
+    }
+
+    document.getElementById('filter-search').addEventListener('input', applyFilters);
+    document.getElementById('filter-status').addEventListener('change', applyFilters);
+    document.getElementById('btn-refresh').addEventListener('click', loadDashboardData);
+
+    // Export CSV
+    document.getElementById('btn-export-csv').addEventListener('click', () => {
+      if (cachedAttempts.length === 0) {
+        alert("এক্সপোর্ট করার মতো কোনো ফলাফল পাওয়া যায়নি।");
+        return;
+      }
+
+      let csv = "Roll Number,Student Name,Score,Total Questions,Percentage,Status,Violation Reason,Time Taken Seconds,Submitted At\n";
+      cachedAttempts.forEach(a => {
+        const cleanName = `"${(a.name || '').replace(/"/g, '""')}"`;
+        const reason = `"${(a.violationReason || 'Submitted Normally').replace(/"/g, '""')}"`;
+        csv += `${a.roll},${cleanName},${a.score || 0},20,${a.percentage || 0}%,${a.isNormalSubmit ? 'Normal' : 'Auto-Submitted'},${reason},${a.timeTakenSeconds || 0},${a.submittedAt || ''}\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `Class8_Math_10.3_Exam_Results_${new Date().toISOString().slice(0, 10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    });
+
+    // ========================================================
+    // EXAM BUILDER & QUIZ MANAGEMENT LOGIC
+    // ========================================================
+    let questionRowCounter = 0;
+
+    function renderExamsSummary() {
+      const container = document.getElementById('exams-summary-list');
+      if (!container) return;
+      container.innerHTML = '';
+
+      const catalog = (typeof getAllExamsCatalog === 'function') 
+        ? getAllExamsCatalog() 
+        : ((typeof EXAMS_CATALOG !== 'undefined') ? EXAMS_CATALOG : []);
+
+      const customList = getCustomExamsList();
+
+      catalog.forEach(exam => {
+        const isCustom = customList.some(c => c.id === exam.id);
+        const card = document.createElement('div');
+        card.className = "p-3 rounded-xl border border-slate-200 bg-white shadow-xs flex flex-col justify-between space-y-2 hover:border-slate-300 transition";
+
+        const qCount = (exam.questions && Array.isArray(exam.questions)) ? exam.questions.length : (exam.totalQuestions || 20);
+        const isActive = exam.status === 'active';
+
+        card.innerHTML = `
+          <div>
+            <div class="flex items-center justify-between gap-1 mb-1">
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold ${isActive ? 'bg-emerald-100 text-emerald-800' : 'bg-purple-100 text-purple-800'}">
+                ${isActive ? '● সক্রিয় (Active)' : '○ আসন্ন (Upcoming)'}
+              </span>
+              <span class="text-[10px] font-mono text-slate-400 font-bold">${exam.code || exam.id}</span>
+            </div>
+            <h4 class="font-bold text-slate-900 text-xs line-clamp-1" title="${exam.title}">${exam.title}</h4>
+            <div class="flex items-center space-x-2 text-[11px] text-slate-500 mt-1">
+              <span>${exam.subject || 'সাধারণ'}</span>
+              <span>•</span>
+              <span>${qCount} টি প্রশ্ন</span>
+              <span>•</span>
+              <span>${exam.durationMinutes || 20} মিনিট</span>
+            </div>
+          </div>
+          <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
+            <span class="text-slate-400">${isCustom ? 'শিক্ষকের তৈরি' : 'সিস্টেম ক্যাটালগ'}</span>
+            ${isCustom ? `
+              <button type="button" class="btn-delete-custom-exam text-red-600 hover:text-red-700 font-semibold" data-id="${exam.id}">
+                মুছে ফেলুন
+              </button>
+            ` : `
+              <span class="text-slate-400">বিল্ট-ইন</span>
+            `}
+          </div>
+        `;
+        container.appendChild(card);
+      });
+
+      // Bind delete custom exam buttons
+      container.querySelectorAll('.btn-delete-custom-exam').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const id = btn.getAttribute('data-id');
+          if (confirm(`আপনি কি নিশ্চিত যে এই পরীক্ষাটি মুছে ফেলতে চান?`)) {
+            deleteCustomExam(id);
+          }
+        });
+      });
+    }
+
+    function getCustomExamsList() {
+      try {
+        const saved = localStorage.getItem('custom_exams_catalog');
+        return saved ? JSON.parse(saved) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveCustomExamsList(list) {
+      localStorage.setItem('custom_exams_catalog', JSON.stringify(list));
+    }
+
+    function deleteCustomExam(id) {
+      let list = getCustomExamsList();
+      list = list.filter(e => e.id !== id);
+      saveCustomExamsList(list);
+      renderExamsSummary();
+    }
+
+    // Modal Opening & Question Builder
+    const createModal = document.getElementById('create-exam-modal');
+    const openBtn1 = document.getElementById('btn-open-create-exam');
+    const openBtn2 = document.getElementById('btn-quick-add-exam');
+    const closeBtn = document.getElementById('btn-close-create-modal');
+    const addQuestionRowBtn = document.getElementById('btn-add-question-row');
+    const saveNewExamBtn = document.getElementById('btn-save-new-exam');
+    const copyExamCodeBtn = document.getElementById('btn-copy-exam-code');
+    const questionsContainer = document.getElementById('builder-questions-list');
+    const questionCountBadge = document.getElementById('badge-question-count');
+
+    function openCreateExamModal() {
+      // Clear form
+      document.getElementById('new-exam-title').value = '';
+      document.getElementById('new-exam-code').value = 'exam-' + Date.now().toString().slice(-4);
+      document.getElementById('new-exam-subject').value = 'সাধারণ গণিত / বিজ্ঞান';
+      document.getElementById('new-exam-class').value = 'অষ্টম শ্রেণি (Class 8)';
+      document.getElementById('new-exam-duration').value = '20';
+      document.getElementById('new-exam-passmarks').value = '8';
+      document.getElementById('new-exam-desc').value = '';
+      document.getElementById('new-exam-status').value = 'active';
+
+      questionsContainer.innerHTML = '';
+      questionRowCounter = 0;
+
+      // Add 2 initial question rows
+      addQuestionRow();
+      addQuestionRow();
+
+      createModal.classList.remove('hidden');
+    }
+
+    if (openBtn1) openBtn1.addEventListener('click', openCreateExamModal);
+    if (openBtn2) openBtn2.addEventListener('click', openCreateExamModal);
+    if (closeBtn) closeBtn.addEventListener('click', () => createModal.classList.add('hidden'));
+
+    function updateQuestionCount() {
+      const rows = questionsContainer.querySelectorAll('.question-row-card');
+      if (questionCountBadge) {
+        questionCountBadge.textContent = `${rows.length}টি প্রশ্ন যুক্ত হয়েছে`;
+      }
+    }
+
+    function addQuestionRow(data = null) {
+      questionRowCounter++;
+      const currentNum = questionRowCounter;
+
+      const card = document.createElement('div');
+      card.className = "question-row-card p-4 rounded-xl border border-slate-200 bg-white space-y-3 relative shadow-xs";
+
+      card.innerHTML = `
+        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+          <span class="text-xs font-bold text-indigo-700 uppercase tracking-wider flex items-center space-x-1.5">
+            <span class="w-5 h-5 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-[10px] font-extrabold row-index-label">${questionsContainer.children.length + 1}</span>
+            <span>বহুনির্বাচনী প্রশ্ন</span>
+          </span>
+          <button type="button" class="btn-remove-row text-slate-400 hover:text-red-500 text-xs font-bold transition px-2 py-1 rounded hover:bg-red-50">
+            ✕ মুছে ফেলুন
+          </button>
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-bold text-slate-600 mb-1">প্রশ্নের বিবরণ (Question Text) *</label>
+          <textarea class="q-text w-full px-3 py-2 border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none" rows="2" placeholder="এখানে প্রশ্নটি লিখুন...">${data ? data.question : ''}</textarea>
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="block text-[11px] font-bold text-slate-600">অপশনসমূহ ও সঠিক উত্তর নির্বাচন (টিক দিন) *</label>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <!-- Option 0 -->
+            <div class="flex items-center space-x-2 p-1.5 border border-slate-200 rounded-lg bg-slate-50/50">
+              <input type="radio" name="correct_opt_${currentNum}" value="0" class="q-correct w-4 h-4 text-emerald-600 focus:ring-emerald-500" ${(!data || data.correctIndex === 0) ? 'checked' : ''} title="সঠিক উত্তর হিসেবে নির্বাচন করুন">
+              <span class="text-xs font-bold text-slate-500">ক.</span>
+              <input type="text" class="q-opt-0 w-full px-2 py-1 bg-white border border-slate-200 rounded text-xs focus:outline-none" placeholder="অপশন ১..." value="${data && data.options ? data.options[0] : ''}">
+            </div>
+
+            <!-- Option 1 -->
+            <div class="flex items-center space-x-2 p-1.5 border border-slate-200 rounded-lg bg-slate-50/50">
+              <input type="radio" name="correct_opt_${currentNum}" value="1" class="q-correct w-4 h-4 text-emerald-600 focus:ring-emerald-500" ${(data && data.correctIndex === 1) ? 'checked' : ''} title="সঠিক উত্তর হিসেবে নির্বাচন করুন">
+              <span class="text-xs font-bold text-slate-500">খ.</span>
+              <input type="text" class="q-opt-1 w-full px-2 py-1 bg-white border border-slate-200 rounded text-xs focus:outline-none" placeholder="অপশন ২..." value="${data && data.options ? data.options[1] : ''}">
+            </div>
+
+            <!-- Option 2 -->
+            <div class="flex items-center space-x-2 p-1.5 border border-slate-200 rounded-lg bg-slate-50/50">
+              <input type="radio" name="correct_opt_${currentNum}" value="2" class="q-correct w-4 h-4 text-emerald-600 focus:ring-emerald-500" ${(data && data.correctIndex === 2) ? 'checked' : ''} title="সঠিক উত্তর হিসেবে নির্বাচন করুন">
+              <span class="text-xs font-bold text-slate-500">গ.</span>
+              <input type="text" class="q-opt-2 w-full px-2 py-1 bg-white border border-slate-200 rounded text-xs focus:outline-none" placeholder="অপশন ৩..." value="${data && data.options ? data.options[2] : ''}">
+            </div>
+
+            <!-- Option 3 -->
+            <div class="flex items-center space-x-2 p-1.5 border border-slate-200 rounded-lg bg-slate-50/50">
+              <input type="radio" name="correct_opt_${currentNum}" value="3" class="q-correct w-4 h-4 text-emerald-600 focus:ring-emerald-500" ${(data && data.correctIndex === 3) ? 'checked' : ''} title="সঠিক উত্তর হিসেবে নির্বাচন করুন">
+              <span class="text-xs font-bold text-slate-500">ঘ.</span>
+              <input type="text" class="q-opt-3 w-full px-2 py-1 bg-white border border-slate-200 rounded text-xs focus:outline-none" placeholder="অপশন ৪..." value="${data && data.options ? data.options[3] : ''}">
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 pt-1">
+          <div>
+            <label class="block text-[11px] font-bold text-slate-600 mb-0.5">গাণিতিক / ধারণাগত ব্যাখ্যা (Explanation)</label>
+            <input type="text" class="q-explanation w-full px-2.5 py-1.5 border border-slate-200 rounded text-xs focus:outline-none" placeholder="সঠিক উত্তরের পূর্ণাঙ্গ ব্যাখ্যা বা সূত্র..." value="${data ? (data.explanation || '') : ''}">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-600 mb-0.5">টপিক (Topic / অধ্যায় অংশ)</label>
+            <input type="text" class="q-topic w-full px-2.5 py-1.5 border border-slate-200 rounded text-xs focus:outline-none" placeholder="উদা: বৃত্তের পরিধি / মহাকর্ষ সূত্র" value="${data ? (data.topic || '') : ''}">
+          </div>
+        </div>
+      `;
+
+      // Remove row handler
+      card.querySelector('.btn-remove-row').addEventListener('click', () => {
+        card.remove();
+        refreshRowIndexes();
+        updateQuestionCount();
+      });
+
+      questionsContainer.appendChild(card);
+      refreshRowIndexes();
+      updateQuestionCount();
+    }
+
+    function refreshRowIndexes() {
+      const labels = questionsContainer.querySelectorAll('.row-index-label');
+      labels.forEach((el, idx) => {
+        el.textContent = idx + 1;
+      });
+    }
+
+    if (addQuestionRowBtn) {
+      addQuestionRowBtn.addEventListener('click', () => addQuestionRow());
+    }
+
+    function collectExamDataFromModal() {
+      const title = document.getElementById('new-exam-title').value.trim();
+      let code = document.getElementById('new-exam-code').value.trim();
+      const subject = document.getElementById('new-exam-subject').value.trim() || 'সাধারণ';
+      const className = document.getElementById('new-exam-class').value.trim() || 'অষ্টম শ্রেণি';
+      const duration = parseInt(document.getElementById('new-exam-duration').value, 10) || 20;
+      const passMarks = parseInt(document.getElementById('new-exam-passmarks').value, 10) || 8;
+      const desc = document.getElementById('new-exam-desc').value.trim() || title;
+      const status = document.getElementById('new-exam-status').value || 'active';
+
+      if (!title) {
+        alert("দয়া করে পরীক্ষার নাম (Title) লিখুন।");
+        return null;
+      }
+      if (!code) {
+        code = 'exam-' + Date.now().toString().slice(-4);
+      }
+
+      const rows = questionsContainer.querySelectorAll('.question-row-card');
+      if (rows.length === 0) {
+        alert("কমপক্ষে একটি বহুনির্বাচনী প্রশ্ন যুক্ত করুন।");
+        return null;
+      }
+
+      const questions = [];
+      let hasError = false;
+
+      rows.forEach((row, idx) => {
+        if (hasError) return;
+
+        const qText = row.querySelector('.q-text').value.trim();
+        const opt0 = row.querySelector('.q-opt-0').value.trim();
+        const opt1 = row.querySelector('.q-opt-1').value.trim();
+        const opt2 = row.querySelector('.q-opt-2').value.trim();
+        const opt3 = row.querySelector('.q-opt-3').value.trim();
+        const explanation = row.querySelector('.q-explanation').value.trim();
+        const topic = row.querySelector('.q-topic').value.trim() || 'সাধারণ';
+
+        const checkedRadio = row.querySelector('.q-correct:checked');
+        const correctIndex = checkedRadio ? parseInt(checkedRadio.value, 10) : 0;
+
+        if (!qText) {
+          alert(`প্রশ্ন ${idx + 1}-এর বিবরণ লিখুন।`);
+          hasError = true;
+          return;
+        }
+
+        if (!opt0 || !opt1 || !opt2 || !opt3) {
+          alert(`প্রশ্ন ${idx + 1}-এর সবগুলো ৪টি অপশন পূরণ করুন।`);
+          hasError = true;
+          return;
+        }
+
+        questions.push({
+          id: idx + 1,
+          question: qText,
+          options: [opt0, opt1, opt2, opt3],
+          correctIndex: correctIndex,
+          explanation: explanation || `সঠিক উত্তর: ${[opt0, opt1, opt2, opt3][correctIndex]}`,
+          topic: topic
+        });
+      });
+
+      if (hasError) return null;
+
+      return {
+        id: code.toLowerCase().replace(/[^a-z0-9_-]/g, '-'),
+        code: code.toUpperCase(),
+        title: title,
+        subject: subject,
+        class: className,
+        description: desc,
+        totalQuestions: questions.length,
+        durationMinutes: duration,
+        totalMarks: questions.length,
+        passMarks: passMarks,
+        status: status,
+        badgeColor: "indigo",
+        questions: questions
+      };
+    }
+
+    if (saveNewExamBtn) {
+      saveNewExamBtn.addEventListener('click', () => {
+        const exam = collectExamDataFromModal();
+        if (!exam) return;
+
+        let list = getCustomExamsList();
+        // Check if ID exists, replace or append
+        const existIdx = list.findIndex(e => e.id === exam.id);
+        if (existIdx >= 0) {
+          list[existIdx] = exam;
+        } else {
+          list.push(exam);
+        }
+
+        saveCustomExamsList(list);
+        createModal.classList.add('hidden');
+        renderExamsSummary();
+        alert(`✅ পরীক্ষা "${exam.title}" সফলভাবে পোর্টালে যুক্ত হয়েছে! শিক্ষার্থীরা এখন এটি দেখতে ও পরীক্ষা দিতে পারবে।`);
+      });
+    }
+
+    if (copyExamCodeBtn) {
+      copyExamCodeBtn.addEventListener('click', () => {
+        const exam = collectExamDataFromModal();
+        if (!exam) return;
+
+        const codeString = `  {\n    id: "${exam.id}",\n    code: "${exam.code}",\n    title: "${exam.title}",\n    subject: "${exam.subject}",\n    class: "${exam.class}",\n    description: "${exam.description}",\n    totalQuestions: ${exam.totalQuestions},\n    durationMinutes: ${exam.durationMinutes},\n    totalMarks: ${exam.totalMarks},\n    passMarks: ${exam.passMarks},\n    status: "${exam.status}",\n    badgeColor: "indigo",\n    questions: ${JSON.stringify(exam.questions, null, 6)}\n  },`;
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(codeString).then(() => {
+            alert("📋 পরীক্ষার জাভাস্ক্রিপ্ট কোড কপি করা হয়েছে!\n\nআপনি এটি সরাসরি js/exams.js ফাইলে EXAMS_CATALOG অ্যারেতে পেস্ট করে GitHub/Vercel-এ স্থায়ীভাবে প্রকাশ করতে পারেন।");
+          }).catch(err => {
+            prompt("নিচের কোডটি কপি করে নিন:", codeString);
+          });
+        } else {
+          prompt("নিচের কোডটি কপি করে নিন:", codeString);
+        }
+      });
+    }
+
+    // Call renderExamsSummary after auth
+    const originalLoadDashboardData = loadDashboardData;
+    loadDashboardData = function() {
+      originalLoadDashboardData();
+      renderExamsSummary();
+    };
+  </script>
+</body>
+</html>
