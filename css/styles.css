@@ -1,0 +1,152 @@
+/* Custom Styles & Security CSS Rules */
+@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --danger: #dc2626;
+  --success: #16a34a;
+  --warning: #d97706;
+}
+
+body {
+  font-family: 'Hind Siliguri', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Security: Universal Selection & Touch Callout Blocking */
+.no-select, body.exam-mode {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Instant Blackout Styling for Anti-Screenshot & Focus Loss */
+#blackout-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: #000000;
+  backdrop-filter: blur(45px);
+  -webkit-backdrop-filter: blur(45px);
+  z-index: 100000;
+  pointer-events: all;
+  transition: opacity 0.05s ease;
+}
+
+.blackout-active {
+  filter: brightness(0) blur(35px) !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  user-select: none !important;
+}
+
+/* Security: Print Blocking - Blank page on Ctrl+P */
+@media print {
+  body {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    overflow: hidden !important;
+  }
+}
+
+/* When explicitly printing verified result slip only */
+@media print {
+  body.printing-slip {
+    display: block !important;
+    visibility: visible !important;
+    background: #ffffff !important;
+  }
+  body.printing-slip #start-screen,
+  body.printing-slip #exam-screen,
+  body.printing-slip #questions-review-section,
+  body.printing-slip #watermark-container,
+  body.printing-slip .no-print {
+    display: none !important;
+  }
+  body.printing-slip #safe-result-card {
+    display: block !important;
+    visibility: visible !important;
+    box-shadow: none !important;
+    border: 2px solid #000 !important;
+    margin: 0 auto !important;
+    width: 100% !important;
+  }
+}
+
+/* Diagonal Watermark Styling */
+.watermark-text {
+  user-select: none;
+  pointer-events: none;
+  transform: rotate(-25deg);
+  font-size: 13px;
+  line-height: 1.8;
+  color: rgba(30, 41, 59, 0.12);
+  white-space: nowrap;
+}
+
+/* Custom Radio Option Card Styling */
+.option-label {
+  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  border-width: 1.5px;
+}
+
+.option-label:hover {
+  border-color: #93c5fd;
+  background-color: #f8fafc;
+}
+
+.option-label.selected {
+  border-color: #2563eb;
+  background-color: #eff6ff;
+  box-shadow: 0 0 0 1.5px #2563eb;
+}
+
+/* Math symbols & formulas typography */
+.math-formula {
+  font-family: 'Cambria Math', 'Times New Roman', serif;
+  font-style: italic;
+}
+
+/* Pulsing Timer for Danger State (< 3 minutes) */
+@keyframes timerPulse {
+  0%, 100% {
+    transform: scale(1);
+    background-color: #fee2e2;
+  }
+  50% {
+    transform: scale(1.04);
+    background-color: #fca5a5;
+  }
+}
+
+.timer-danger {
+  animation: timerPulse 1.2s infinite ease-in-out;
+  color: #991b1b !important;
+  border-color: #ef4444 !important;
+}
+
+/* Smooth Scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom Scrollbar for Questions Palette */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
